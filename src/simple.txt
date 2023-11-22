@@ -1,0 +1,86 @@
+// Import necessary modules
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const LibraryApp = () => {
+  // State to hold the list of books and current book information
+  const [books, setBooks] = useState([]);
+  const [newBook, setNewBook] = useState({ title: '', author: '' });
+
+  // Fetch books on component mount
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
+  // Function to fetch books from the server
+  const fetchBooks = async () => {
+    try {
+      const response = await axios.get('https://your-api-endpoint/books');
+      setBooks(response.data);
+    } catch (error) {
+      console.error('Error fetching books:', error);
+    }
+  };
+
+  // Function to handle book creation
+  const createBook = async () => {
+    try {
+      await axios.post('https://your-api-endpoint/books', newBook);
+      fetchBooks(); 
+      // Refresh the book list after creation
+      setNewBook({ title: '', author: '' }); 
+      // Clear the form
+    } catch (error) {
+      console.error('Error creating book:', error);
+    }
+  };
+
+  // Function to handle book deletion
+  const deleteBook = async (bookId) => {
+    try {
+      await axios.delete(`https://your-api-endpoint/books/${bookId}`);
+      fetchBooks(); // Refresh the book list after deletion
+    } catch (error) {
+      console.error('Error deleting book:', error);
+    }
+  };
+
+  return (
+    <div>
+      <h1>Library Management</h1>
+
+      {/* Create Book Form */}
+      <div>
+        <h2>Create New Book</h2>
+        <input
+          type="text"
+          placeholder="Title"
+          value={newBook.title}
+          onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
+        />
+        <input
+          type="text"
+          placeholder="Author"
+          value={newBook.author}
+          onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
+        />
+        <button onClick={createBook}>Add Book</button>
+      </div>
+
+      {/* Book List */}
+      <div>
+        <h2>Book List</h2>
+        <ul>
+          {books.map((book) => (
+            <li key={book.id}>
+              {book.title} by {book.author}
+              <button onClick={() => deleteBook(book.id)}>Delete</button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+export default LibraryApp;
